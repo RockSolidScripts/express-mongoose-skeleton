@@ -14,10 +14,10 @@ const app = express()
 const { PORT } = config
 
 
-// * Conntect to MongoDb
+// * Connect to MongoDb
 connectDb();
 
-// * Express Middlewares
+// * Express Middleware
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(logger.middleware)

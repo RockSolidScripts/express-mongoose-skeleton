@@ -7,15 +7,16 @@ import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 // * Store request logs in "logs/access.log"
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const accessLogStream = fs.createWriteStream(path.join(__dirname, '../logs/access.log'), { flags: 'a' })
+// * Uncomment and use in production
+// const __filename = fileURLToPath(import.meta.url);
+// const __dirname = dirname(__filename);
+// const accessLogStream = fs.createWriteStream(path.join(__dirname, '../logs/access.log'), { flags: 'a' })
 
 // TODO: Uncomment before deploying to production
 // ? Morgan for production mode
 // const middleware = morgan('combined', { stream: accessLogStream })
 
-// ? Morgan in developemnt mode
+// ? Morgan in development mode
 const middleware = morgan('dev')
 
 // ? Logger for debugging - replacing console.log with consola

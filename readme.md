@@ -6,7 +6,7 @@ Basic stater backend project using Express, MongoDb.
 
 - Mongoose as ODM
 - Consola and Morgan for logger
-- Http-errors for erroe handling
+- Http-errors for error handling
 - Joi for schema validation
 - Nodemon for monitoring changes
 
