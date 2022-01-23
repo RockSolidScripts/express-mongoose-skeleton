@@ -3,6 +3,7 @@ import httpErrors from "http-errors";
 
 // * Import local JS files
 import { UserModel } from "../models/user.model.js";
+import registerSchema from "../utils/joi_validation_schema.js";
 
 const login = async (req, res, next) => {
   res.status(200).send({
@@ -12,8 +13,7 @@ const login = async (req, res, next) => {
 
 const register = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) throw httpErrors.BadRequest();
+    const { email, password } = await registerSchema.validateAsync(req.body);
 
     const userExists = await UserModel.findOne({ email });
     if (userExists)
@@ -26,6 +26,7 @@ const register = async (req, res, next) => {
       data: registerUser,
     });
   } catch (error) {
+    if (error.isJoi === true) error.status = 422;
     next(error);
   }
 };
