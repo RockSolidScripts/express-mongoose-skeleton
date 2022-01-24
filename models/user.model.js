@@ -15,6 +15,15 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
+  first_name: {
+    type: String,
+    required: true,
+  },
+  dob: {
+    type: Date,
+    required: true,
+    min: "1920-01-01",
+  },
 });
 
 UserSchema.pre("save", async function (next) {
