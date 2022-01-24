@@ -10,7 +10,7 @@ export const signJwtToken = (userId, secret, exp) => {
       audience: userId.toString(),
     };
     JWT.sign(payload, secret, options, (err, token) => {
-      if (err) return reject(err);
+      if (err) return reject(httpErrors.InternalServerError());
       resolve(token);
     });
   });
