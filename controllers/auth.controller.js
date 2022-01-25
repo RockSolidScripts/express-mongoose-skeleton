@@ -4,13 +4,17 @@ import httpErrors from "http-errors";
 // * Import local JS files
 import { UserModel } from "../models/user.model.js";
 import { registerSchema, loginSchema } from "../utils/joi_validation_schema.js";
-import { signJwtToken } from "../utils/jwt_helpers.js";
+import {
+  createAccessAndRefreshToken,
+  verifyRefreshToken,
+} from "../utils/jwt_helpers.js";
 import config from "../config/config.js";
 import {
   EMAIL_ALREADY_REGISTERED,
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
 } from "../utils/constants.js";
+import logger from "../utils/logger.js";
 
 const login = async (req, res, next) => {
   try {
@@ -23,15 +27,14 @@ const login = async (req, res, next) => {
     const isMatch = await userExists.isValidPassword(password);
     if (!isMatch) throw httpErrors.Unauthorized(INVALID_USERNAME_OR_PASSWORD);
 
-    const accessToken = await signJwtToken(
-      userExists._id,
-      config.JWT_ACCESS_SECRET,
-      config.JWT_ACCESS_EXPIRY
+    const { access_token, refresh_token } = await createAccessAndRefreshToken(
+      userExists._id
     );
 
     res.status(200).send({
       status: 200,
-      access_token: accessToken,
+      access_token,
+      refresh_token,
     });
   } catch (error) {
     if (error.isJoi)
@@ -50,15 +53,14 @@ const register = async (req, res, next) => {
       throw httpErrors.Conflict(`${email} - ${EMAIL_ALREADY_REGISTERED}`);
 
     const registeredUser = await UserModel.create(validatedResult);
-    const accessToken = await signJwtToken(
-      registeredUser._id,
-      config.JWT_ACCESS_SECRET,
-      config.JWT_ACCESS_EXPIRY
+    const { access_token, refresh_token } = await createAccessAndRefreshToken(
+      registeredUser._id
     );
 
     res.status(200).send({
       status: 200,
-      access_token: accessToken,
+      access_token,
+      refresh_token,
     });
   } catch (error) {
     if (error.isJoi === true) error.status = 422;
@@ -66,7 +68,28 @@ const register = async (req, res, next) => {
   }
 };
 
+const refreshToken = async (req, res, next) => {
+  try {
+    const { refresh_token: refreshToken } = req.body;
+    if (!refreshToken) throw httpErrors.BadRequest();
+
+    const userId = await verifyRefreshToken(refreshToken);
+
+    const { access_token, refresh_token } = await createAccessAndRefreshToken(
+      userId
+    );
+    res.status(200).send({
+      status: 200,
+      access_token,
+      refresh_token,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   login,
   register,
+  refreshToken,
 };
