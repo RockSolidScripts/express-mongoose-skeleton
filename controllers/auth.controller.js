@@ -14,8 +14,6 @@ import {
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
 } from "../utils/constants.js";
-import logger from "../utils/logger.js";
-import { LoggerLevel } from "mongodb";
 
 const login = async (req, res, next) => {
   try {

@@ -20,6 +20,7 @@ const envSchema = joi
     JWT_REFRESH_SECRET: joi.string().required(),
     JWT_ACCESS_EXPIRY: joi.string().required(),
     JWT_REFRESH_EXPIRY: joi.string().required(),
+    REDIS_REFRESH_TOKEN_EXPIRY: joi.string().required(),
   })
   .unknown();
 
@@ -45,4 +46,5 @@ export default {
   JWT_REFRESH_SECRET: env.JWT_REFRESH_SECRET,
   JWT_ACCESS_EXPIRY: env.JWT_ACCESS_EXPIRY,
   JWT_REFRESH_EXPIRY: env.JWT_REFRESH_EXPIRY,
+  REDIS_REFRESH_TOKEN_EXPIRY: env.REDIS_REFRESH_TOKEN_EXPIRY,
 };

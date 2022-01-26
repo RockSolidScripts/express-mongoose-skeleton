@@ -20,7 +20,7 @@ const signJwtToken = (userId, secret, exp) => {
         redisClient.SET(
           userId.toString(),
           token,
-          { EX: 15 * 24 * 60 * 60 },
+          { EX: config.REDIS_REFRESH_TOKEN_EXPIRY * 24 * 60 * 60 },
           (err, _) => {
             console.log(err);
             if (err) return reject(httpErrors.InternalServerError());
