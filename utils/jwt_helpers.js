@@ -3,6 +3,7 @@ import httpErrors from "http-errors";
 
 import config from "../config/config.js";
 import { USER_UNAUTHORIZED } from "./constants.js";
+import redisClient from "../redis/initRedis.js";
 
 const signJwtToken = (userId, secret, exp) => {
   return new Promise((resolve, reject) => {
@@ -14,6 +15,19 @@ const signJwtToken = (userId, secret, exp) => {
     };
     JWT.sign(payload, secret, options, (err, token) => {
       if (err) return reject(httpErrors.InternalServerError());
+
+      if (exp === config.JWT_REFRESH_EXPIRY) {
+        redisClient.SET(
+          userId.toString(),
+          token,
+          { EX: 15 * 24 * 60 * 60 },
+          (err, _) => {
+            console.log(err);
+            if (err) return reject(httpErrors.InternalServerError());
+            resolve(token);
+          }
+        );
+      }
       resolve(token);
     });
   });
@@ -42,8 +56,16 @@ export const verifyRefreshToken = (refresh_token) => {
     JWT.verify(refresh_token, config.JWT_REFRESH_SECRET, (err, payload) => {
       if (err) return reject(httpErrors.Unauthorized());
       const userId = payload.aud;
-
-      resolve(userId);
+      redisClient
+        .GET(userId)
+        .then((res) => {
+          if (res === refresh_token) return resolve(userId);
+          reject(httpErrors.Unauthorized());
+        })
+        .catch((err) => {
+          console.log(err);
+          reject(httpErrors.InternalServerError());
+        });
     });
   });
 };

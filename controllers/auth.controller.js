@@ -8,13 +8,11 @@ import {
   createAccessAndRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt_helpers.js";
-import config from "../config/config.js";
 import {
   EMAIL_ALREADY_REGISTERED,
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
 } from "../utils/constants.js";
-import logger from "../utils/logger.js";
 
 const login = async (req, res, next) => {
   try {

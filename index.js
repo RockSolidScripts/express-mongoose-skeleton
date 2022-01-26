@@ -9,6 +9,7 @@ import logger from "./utils/logger.js";
 import errors from "./utils/errors.js";
 import routes from "./routes/index.js";
 import connectDb from "./mongo/initDb.js";
+import redisClient from "./redis/initRedis.js";
 import { verifyAccessToken } from "./utils/jwt_helpers.js";
 
 const app = express();
