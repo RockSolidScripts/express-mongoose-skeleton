@@ -3,6 +3,7 @@ import httpErrors from "http-errors";
 
 // * Import local JS files
 import { UserModel } from "../models/user.model.js";
+import redisCLient from "../redis/initRedis.js";
 import { registerSchema, loginSchema } from "../utils/joi_validation_schema.js";
 import {
   createAccessAndRefreshToken,
@@ -13,6 +14,8 @@ import {
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
 } from "../utils/constants.js";
+import logger from "../utils/logger.js";
+import { LoggerLevel } from "mongodb";
 
 const login = async (req, res, next) => {
   try {
@@ -86,8 +89,23 @@ const refreshToken = async (req, res, next) => {
   }
 };
 
+const logout = async (req, res, next) => {
+  try {
+    const { refresh_token: refreshToken } = req.body;
+    if (!refreshToken) throw httpErrors.BadRequest();
+
+    const userId = await verifyRefreshToken(refreshToken);
+
+    await redisCLient.DEL(userId);
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   login,
   register,
   refreshToken,
+  logout,
 };
