@@ -1,5 +1,6 @@
 // * Import NPM Modules
 import httpErrors from "http-errors";
+import cloudinary from "cloudinary";
 
 // * Import local JS files
 import { UserModel } from "../models/user.model.js";
@@ -14,6 +15,7 @@ import {
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
 } from "../utils/constants.js";
+import logger from "../utils/logger.js";
 
 const login = async (req, res, next) => {
   try {
@@ -47,11 +49,24 @@ const register = async (req, res, next) => {
     const validatedResult = await registerSchema.validateAsync(req.body);
     const { email } = validatedResult;
 
+    logger.log.info(req.files);
+
+    let image = req.files.image;
+    const result = await cloudinary.v2.uploader.upload(image.tempFilePath, {
+      folder: "users",
+    });
+
     const userExists = await UserModel.findOne({ email });
     if (userExists)
       throw httpErrors.Conflict(`${email} - ${EMAIL_ALREADY_REGISTERED}`);
 
-    const registeredUser = await UserModel.create(validatedResult);
+    const registeredUser = await UserModel.create({
+      ...validatedResult,
+      photo: {
+        id: result.public_id,
+        secure_url: result.secure_url,
+      },
+    });
     const { access_token, refresh_token } = await createAccessAndRefreshToken(
       registeredUser._id
     );
@@ -63,6 +78,7 @@ const register = async (req, res, next) => {
     });
   } catch (error) {
     if (error.isJoi === true) error.status = 422;
+    console.log(error);
     next(error);
   }
 };

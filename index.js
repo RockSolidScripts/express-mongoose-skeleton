@@ -10,7 +10,9 @@ import errors from "./utils/errors.js";
 import routes from "./routes/index.js";
 import connectDb from "./mongo/initDb.js";
 import redisClient from "./redis/initRedis.js";
+import cloudinary from "cloudinary";
 import { verifyAccessToken } from "./utils/jwt_helpers.js";
+import fileUpload from "express-fileupload";
 
 const app = express();
 const { PORT } = config;
@@ -18,11 +20,25 @@ const { PORT } = config;
 // * Connect to MongoDb
 connectDb();
 
+// * Cloudinary config
+cloudinary.config({
+  cloud_name: config.CLOUDINARY_NAME,
+  api_key: config.CLOUDINARY_API_KEY,
+  api_secret: config.CLOUDINARY_API_SECRET,
+  secure: false,
+});
+
 // * Express Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger.middleware);
 app.use(helmet());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 app.use(
   cors({
     origin: config.ALLOWED_ORIGINS,

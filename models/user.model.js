@@ -25,6 +25,16 @@ const UserSchema = new Schema(
       required: true,
       min: "1920-01-01",
     },
+    photo: {
+      id: {
+        type: String,
+        required: true,
+      },
+      secure_url: {
+        type: String,
+        required: true,
+      },
+    },
   },
   { timestamps: true }
 );

@@ -21,6 +21,9 @@ const envSchema = joi
     JWT_ACCESS_EXPIRY: joi.string().required(),
     JWT_REFRESH_EXPIRY: joi.string().required(),
     REDIS_REFRESH_TOKEN_EXPIRY: joi.string().required(),
+    CLOUDINARY_NAME: joi.string().required(),
+    CLOUDINARY_API_KEY: joi.string().required(),
+    CLOUDINARY_API_SECRET: joi.string().required(),
   })
   .unknown();
 
@@ -47,4 +50,7 @@ export default {
   JWT_ACCESS_EXPIRY: env.JWT_ACCESS_EXPIRY,
   JWT_REFRESH_EXPIRY: env.JWT_REFRESH_EXPIRY,
   REDIS_REFRESH_TOKEN_EXPIRY: env.REDIS_REFRESH_TOKEN_EXPIRY,
+  CLOUDINARY_NAME: env.CLOUDINARY_NAME,
+  CLOUDINARY_API_KEY: env.CLOUDINARY_API_KEY,
+  CLOUDINARY_API_SECRET: env.CLOUDINARY_API_SECRET,
 };
