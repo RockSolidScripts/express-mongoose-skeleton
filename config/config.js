@@ -11,7 +11,7 @@ dotenv.config();
 const envSchema = joi
   .object()
   .keys({
-    NODE_ENV: joi.string().valid("development", "production").required(),
+    NODE_ENV: joi.string().valid("dev", "prod").required(),
     PORT: joi.number().positive().required(),
     ALLOWED_ORIGINS: joi.string().required(),
     MONGO_DB_URI: joi.string().required(),

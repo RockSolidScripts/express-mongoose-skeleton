@@ -2,6 +2,7 @@
 import express from "express";
 import helmet from "helmet";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 // * Import local JS files
 import config from "./config/config.js";
@@ -20,6 +21,7 @@ connectDb();
 
 // * Express Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger.middleware);
 app.use(helmet());
@@ -30,7 +32,7 @@ app.use(
 );
 
 // * Test route
-app.get("/", verifyAccessToken, (_, res) => {
+app.get("/", verifyAccessToken, (req, res) => {
   res.status(200).send({
     message: "From Express!!!",
   });

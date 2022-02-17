@@ -2,6 +2,7 @@
 import httpErrors from "http-errors";
 
 // * Import local JS files
+import config from "../config/config.js";
 import { UserModel } from "../models/user.model.js";
 import redisCLient from "../redis/initRedis.js";
 import { registerSchema, loginSchema } from "../utils/joi_validation_schema.js";
@@ -13,6 +14,7 @@ import {
   EMAIL_ALREADY_REGISTERED,
   EMAIL_NOT_REGISTERED,
   INVALID_USERNAME_OR_PASSWORD,
+  REGISTERED_SUCCESS,
 } from "../utils/constants.js";
 
 const login = async (req, res, next) => {
@@ -30,10 +32,14 @@ const login = async (req, res, next) => {
       userExists._id
     );
 
+    res.cookie("__refreshToken__", refresh_token, {
+      maxAge: 86400000,
+      httpOnly: true,
+      secure: config.NODE_ENV === "prod" ? true : false,
+    });
     res.status(200).send({
       status: 200,
       access_token,
-      refresh_token,
     });
   } catch (error) {
     if (error.isJoi)
@@ -51,15 +57,11 @@ const register = async (req, res, next) => {
     if (userExists)
       throw httpErrors.Conflict(`${email} - ${EMAIL_ALREADY_REGISTERED}`);
 
-    const registeredUser = await UserModel.create(validatedResult);
-    const { access_token, refresh_token } = await createAccessAndRefreshToken(
-      registeredUser._id
-    );
+    await UserModel.create(validatedResult);
 
     res.status(200).send({
       status: 200,
-      access_token,
-      refresh_token,
+      message: REGISTERED_SUCCESS,
     });
   } catch (error) {
     if (error.isJoi === true) error.status = 422;
@@ -69,7 +71,7 @@ const register = async (req, res, next) => {
 
 const refreshToken = async (req, res, next) => {
   try {
-    const { refresh_token: refreshToken } = req.body;
+    const { __refreshToken__: refreshToken } = req.cookies;
     if (!refreshToken) throw httpErrors.BadRequest();
 
     const userId = await verifyRefreshToken(refreshToken);
@@ -77,10 +79,14 @@ const refreshToken = async (req, res, next) => {
     const { access_token, refresh_token } = await createAccessAndRefreshToken(
       userId
     );
+    res.cookie("__refreshToken__", refresh_token, {
+      maxAge: 86400000,
+      httpOnly: true,
+      secure: config.NODE_ENV === "prod" ? true : false,
+    });
     res.status(200).send({
       status: 200,
       access_token,
-      refresh_token,
     });
   } catch (error) {
     next(error);
@@ -89,12 +95,17 @@ const refreshToken = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
   try {
-    const { refresh_token: refreshToken } = req.body;
+    const { __refreshToken__: refreshToken } = req.cookies;
     if (!refreshToken) throw httpErrors.BadRequest();
 
     const userId = await verifyRefreshToken(refreshToken);
 
     await redisCLient.DEL(userId);
+    res.cookie("__refreshToken__", "", {
+      maxAge: 0,
+      httpOnly: true,
+      secure: config.NODE_ENV === "prod" ? true : false,
+    });
     res.status(204).send();
   } catch (error) {
     next(error);
